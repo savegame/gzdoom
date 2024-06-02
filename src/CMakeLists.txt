@@ -169,6 +169,10 @@ if( NO_OPENAL )
 	add_definitions( -DNO_OPENAL=1 )
 endif()
 
+if( AURORAOS )
+	add_definitions( -DAURORAOS=1 )
+endif()
+
 # Decide on SSE setup
 
 if( X64 )

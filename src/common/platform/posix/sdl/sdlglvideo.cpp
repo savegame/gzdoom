@@ -172,7 +172,21 @@ namespace Priv
 		caption.Format(GAMENAME " %s (%s)", GetVersionString(), GetGitTime());
 
 		const uint32_t windowFlags = (win_maximized ? SDL_WINDOW_MAXIMIZED : 0) | SDL_WINDOW_RESIZABLE | extraFlags;
+#ifdef AURORAOS
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+		SDL_DisplayMode dm;
+		SDL_GetCurrentDisplayMode(0,&dm);
+		int nativeWidth = dm.w < dm.h ? dm.w : dm.h;
+		int nativeHeight = dm.w > dm.h ? dm.w : dm.h;
+		SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+		Priv::window = SDL_CreateWindow(caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, nativeWidth, nativeHeight, window_flags);
+#else
 		Priv::window = SDL_CreateWindow(caption.GetChars(), xWindowPos, yWindowPos, win_w, win_h, windowFlags);
+#endif
 
 		if (Priv::window != nullptr)
 		{
@@ -211,7 +225,11 @@ namespace Priv
 		if (gl_es)
 		{
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+			#ifdef AURORAOS
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+			#else
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+			#endif
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		}
 		else if (glver[0] > 2)
@@ -340,6 +358,7 @@ SDLVideo::SDLVideo ()
 	{
 		I_FatalError("Only SDL 2.0.6 or later is supported.");
 	}
+#endif
 
 #ifdef HAVE_VULKAN
 	Priv::vulkanEnabled = V_GetBackend() == 1;
