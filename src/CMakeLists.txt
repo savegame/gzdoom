@@ -1271,6 +1271,10 @@ if( UNIX )
 	endif()
 endif()
 
+if (AURORAOS)
+	set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} "wayland-client")
+endif()
+
 target_link_libraries( zdoom ${PROJECT_LIBRARIES} lzma ${ZMUSIC_LIBRARIES} )
 
 include_directories(

@@ -62,6 +62,13 @@
 #include <zvulkan/vulkanbuilders.h>
 #endif
 
+#ifdef AURORAOS
+#include <SDL.h>
+#include <SDL_video.h>
+#include <SDL_syswm.h>
+#include <wayland-client-protocol.h>
+#endif
+
 // MACROS ------------------------------------------------------------------
 
 #if defined HAVE_VULKAN
@@ -83,6 +90,10 @@ EXTERN_CVAR (Int, vid_defwidth)
 EXTERN_CVAR (Int, vid_defheight)
 EXTERN_CVAR (Bool, cl_capfps)
 EXTERN_CVAR(Bool, vk_debug)
+
+#ifdef AURORAOS
+EXTERN_CVAR(Int, vid_landscape)
+#endif
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
@@ -183,7 +194,17 @@ namespace Priv
 		int nativeWidth = dm.w < dm.h ? dm.w : dm.h;
 		int nativeHeight = dm.w > dm.h ? dm.w : dm.h;
 		SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
 		Priv::window = SDL_CreateWindow(caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, nativeWidth, nativeHeight, window_flags);
+
+		const SDL_DisplayOrientation orientation = SDL_GetDisplayOrientation(0);
+		if (orientation == SDL_ORIENTATION_LANDSCAPE) {
+			vid_landscape = 0;
+		} else if (orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED) {
+			vid_landscape = 1;
+		} else {
+			vid_landscape = 0;
+		}
 #else
 		Priv::window = SDL_CreateWindow(caption.GetChars(), xWindowPos, yWindowPos, win_w, win_h, windowFlags);
 #endif
@@ -623,14 +644,22 @@ SystemGLFrameBuffer::~SystemGLFrameBuffer ()
 int SystemGLFrameBuffer::GetClientWidth()
 {
 	int width = 0;
+#ifdef AURORAOS
+	SDL_GL_GetDrawableSize(Priv::window, nullptr, &width);
+#else
 	SDL_GL_GetDrawableSize(Priv::window, &width, nullptr);
+#endif
 	return width;
 }
 
 int SystemGLFrameBuffer::GetClientHeight()
 {
 	int height = 0;
+#ifdef AURORAOS
+	SDL_GL_GetDrawableSize(Priv::window, &height, nullptr);
+#else
 	SDL_GL_GetDrawableSize(Priv::window, nullptr, &height);
+#endif
 	return height;
 }
 
@@ -718,3 +747,26 @@ void I_SetWindowTitle(const char* caption)
 	}
 }
 
+#ifdef AURORAOS
+CUSTOM_CVAR(Int, vid_landscape, 2, CVAR_ARCHIVE | CVAR_ISDEFAULT)
+{
+	if (!Priv::window) {
+		Printf("No Window created yet.\n");
+		return;
+	}
+
+	struct SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	if (!SDL_GetWindowWMInfo(Priv::window, &wmInfo))
+		return;
+
+	switch(*self) {
+	case 0:
+		wl_surface_set_buffer_transform(wmInfo.info.wl.surface, WL_OUTPUT_TRANSFORM_90);
+		break;
+	case 1:
+		wl_surface_set_buffer_transform(wmInfo.info.wl.surface, WL_OUTPUT_TRANSFORM_270);
+		break;
+	}
+}
+#endif

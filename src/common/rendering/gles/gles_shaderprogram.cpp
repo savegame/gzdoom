@@ -286,7 +286,11 @@ void FPresentShader::Bind()
 {
 	if (!mShader)
 	{
+#ifdef AURORAOS
+		Init("shaders_gles/pp/present_aurora.fp", "shaders_gles/pp/present");
+#else
 		Init("shaders_gles/pp/present.fp", "shaders_gles/pp/present");
+#endif
 	}
 	mShader->Bind();
 }

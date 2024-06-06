@@ -46,6 +46,9 @@
 #include "engineerrors.h"
 #include "i_interface.h"
 
+#ifdef AURORAOS
+EXTERN_CVAR(Int, vid_landscape)
+#endif
 
 static void I_CheckGUICapture ();
 static void I_CheckNativeMouse ();
@@ -467,6 +470,17 @@ void MessagePump (const SDL_Event &sev)
 		if(event.data1 != 0)
 			D_PostEvent(&event);
 		break;
+#ifdef AURORAOS
+	case SDL_DISPLAYEVENT:
+		if (sev.display.event != SDL_DISPLAYEVENT_ORIENTATION)
+				break;
+		if (sev.display.data1 == SDL_ORIENTATION_LANDSCAPE) {
+			vid_landscape = 0;
+		} else if (sev.display.data1 == SDL_ORIENTATION_LANDSCAPE_FLIPPED) {
+			vid_landscape = 1;
+		}
+		break;
+#endif
 	}
 }
 

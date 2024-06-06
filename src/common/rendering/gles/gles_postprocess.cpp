@@ -38,6 +38,9 @@
 
 extern bool vid_hdr_active;
 
+#ifdef AURORAOS
+EXTERN_CVAR(Int, vid_landscape)
+#endif
 
 namespace OpenGLESRenderer
 {
@@ -104,7 +107,11 @@ void FGLRenderer::CopyToBackbuffer(const IntRect *bounds, bool applyGamma)
 
 	mBuffers->BindCurrentTexture(0);
 #ifndef NO_RENDER_BUFFER
-	DrawPresentTexture(box, applyGamma);
+	#ifdef AURORAOS
+		DrawPresentTexture({box.top, box.left, box.height, box.width}, applyGamma);
+	#else
+		DrawPresentTexture(box, applyGamma);
+	#endif
 #endif
 }
 
@@ -127,6 +134,12 @@ void FGLRenderer::DrawPresentTexture(const IntRect &box, bool applyGamma)
 	}
 
 	mPresentShader->Bind();
+#ifdef AURORAOS
+	{
+		const float c = float(*vid_landscape);
+		mPresentShader->Uniforms->Landscape = {1.0f * c, 1.0f - 2.0f * c, 1.0f - c, 2.0f * c - 1.0f};
+	}
+#endif
 	if (!applyGamma || framebuffer->IsHWGammaActive())
 	{
 		mPresentShader->Uniforms->InvGamma = 1.0f;
@@ -174,8 +187,10 @@ void FGLRenderer::DrawPresentTexture(const IntRect &box, bool applyGamma)
 		case UniformType::Vec2:
 			glUniform2fv(loc,1 , ((GLfloat*)(((char*)(&mPresentShader->Uniforms)) + desc.Offset)));
 			break;
-		default:
+		case UniformType::Vec4:
+			glUniform4fv(loc,1 , ((GLfloat*)(((char*)(&mPresentShader->Uniforms)) + desc.Offset)));
 			break;
+		default:
 		}
 	}
 
