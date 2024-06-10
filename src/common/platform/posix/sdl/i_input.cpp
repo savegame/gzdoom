@@ -179,6 +179,53 @@ static void I_CheckGUICapture ()
 	}
 }
 
+#ifdef AURORAOS
+static void rotateXY(int &x, int &y) 
+{
+	int tmp = x;
+
+	SDL_DisplayMode dm;
+	SDL_GetCurrentDisplayMode(0,&dm);
+
+	if (*vid_landscape == 0) {
+		x = dm.h - y;
+		y = tmp;
+	} else {
+		x = y;
+		y = dm.w - tmp;
+	}
+}
+
+static void rotateXY(int16_t &x, int16_t &y) 
+{
+	int tmp = x;
+
+	SDL_DisplayMode dm;
+	SDL_GetCurrentDisplayMode(0,&dm);
+
+	if (*vid_landscape == 0) {
+		x = dm.h - y;
+		y = tmp;
+	} else {
+		x = y;
+		y = dm.w - tmp;
+	}
+}
+
+static void rotateXYRelative(int &x, int &y)
+{
+	int tmp = x;
+
+	if (*vid_landscape == 0) {
+		x = -y;
+		y = tmp;
+	} else {
+		x = y;
+		y = -tmp;
+	}
+}
+#endif
+
 void I_SetMouseCapture()
 {
 	// Clear out any mouse movement.
@@ -200,7 +247,11 @@ static void MouseRead ()
 		return;
 	}
 
+	
 	SDL_GetRelativeMouseState (&x, &y);
+	#ifdef AURORAOS
+	rotateXYRelative(x, y);
+	#endif
 	PostMouseMove (x, y);
 }
 
@@ -271,6 +322,10 @@ void MessagePump (const SDL_Event &sev)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
+			#ifdef AURORAOS
+			rotateXY(x, y);
+			#endif
+
 			event.type = EV_GUI_Event;
 			event.data1 = x;
 			event.data2 = y;
@@ -316,6 +371,9 @@ void MessagePump (const SDL_Event &sev)
 		{
 			event.data1 = sev.motion.x;
 			event.data2 = sev.motion.y;
+			#ifdef AURORAOS
+			rotateXY(event.data1, event.data2);
+			#endif
 
 			screen->ScaleCoordsFromWindow(event.data1, event.data2);
 
