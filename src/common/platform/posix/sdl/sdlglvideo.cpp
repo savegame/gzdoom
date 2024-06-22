@@ -195,7 +195,7 @@ namespace Priv
 		int nativeHeight = dm.w > dm.h ? dm.w : dm.h;
 		SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
-		Priv::window = SDL_CreateWindow(caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, nativeWidth, nativeHeight, window_flags);
+		Priv::window = SDL_CreateWindow(caption.GetChars(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, nativeWidth, nativeHeight, window_flags);
 
 		const SDL_DisplayOrientation orientation = SDL_GetDisplayOrientation(0);
 		if (orientation == SDL_ORIENTATION_LANDSCAPE) {
@@ -379,7 +379,6 @@ SDLVideo::SDLVideo ()
 	{
 		I_FatalError("Only SDL 2.0.6 or later is supported.");
 	}
-#endif
 
 #ifdef HAVE_VULKAN
 	Priv::vulkanEnabled = V_GetBackend() == 1;
@@ -440,7 +439,7 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 				builder.RequireExtension(names[i]);
 			auto instance = builder.Create();
 
-			VkSurfaceKHR surfacehandle = nullptr;
+			VkSurfaceKHR surfacehandle = 0;
 			if (!I_CreateVulkanSurface(instance->Instance, &surfacehandle))
 				VulkanError("I_CreateVulkanSurface failed");
 

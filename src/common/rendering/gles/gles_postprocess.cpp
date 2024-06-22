@@ -191,6 +191,7 @@ void FGLRenderer::DrawPresentTexture(const IntRect &box, bool applyGamma)
 			glUniform4fv(loc,1 , ((GLfloat*)(((char*)(&mPresentShader->Uniforms)) + desc.Offset)));
 			break;
 		default:
+			break;
 		}
 	}
 
