@@ -101,7 +101,11 @@ const char *GetVersionString();
 #define GAMENAME "GZDoom"
 #define WGAMENAME L"GZDoom"
 #define GAMENAMELOWERCASE "gzdoom"
+#ifdef AURORAOS // FIXME: gui not render on GLES3 AuroraOS
+#define QUERYIWADDEFAULT false
+#else
 #define QUERYIWADDEFAULT true
+#endif
 #define FORUM_URL "http://forum.zdoom.org/"
 #define BUGS_FORUM_URL	"http://forum.zdoom.org/viewforum.php?f=2"
 // For QUERYIWADDEFAULT: Set to 'true' to always show dialog box on startup by default, 'false' to disable.
