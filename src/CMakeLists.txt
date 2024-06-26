@@ -131,7 +131,13 @@ else()
 
 	# Non-Windows version also needs SDL except native OS X backend
 	if( NOT APPLE OR NOT OSX_COCOA_BACKEND )
-		find_package( SDL2 REQUIRED )
+		if( NOT AURORAOS )
+			find_package( SDL2 REQUIRED )
+		else()
+			if( NOT SDL2_INCLUDE_DIR OR NOT SDL2_LIBRARY)
+				message(SEND_ERROR "Please set SDL2_INCLUDE_DIR and SDL2_LIBRARY variables for building for AuroraOS")
+			endif()
+		endif()
 		include_directories( SYSTEM "${SDL2_INCLUDE_DIR}" )
 		set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} "${SDL2_LIBRARY}" )
 	endif()
@@ -1272,7 +1278,7 @@ if( UNIX )
 endif()
 
 if (AURORAOS)
-	set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} "wayland-client")
+	set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} "wayland-client" )
 endif()
 
 target_link_libraries( zdoom ${PROJECT_LIBRARIES} lzma ${ZMUSIC_LIBRARIES} )
